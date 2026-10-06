@@ -1,4 +1,4 @@
-// 这个行业的分类体系：类别、标签词表、公司（主体）名录，以及防止张冠李戴的身份词典。
+// 这个行业的分类体系：类别、标签词表、机构（主体）名录，以及防止张冠李戴的身份词典。
 // 模型按这里的词表打标签，主题页（topics.json）按标签归类，筛选栏按类别分组。
 // 换行业时：类别的 key 会出现在网址里（/all?category=…），上线后就不要再改；标签和名录可以随时增减。
 
@@ -8,132 +8,90 @@
  * 没归上类的资料在日报里放进第一个 key 为 industry 的类别所在的节（没有就放最后一节）。
  */
 export const CATEGORIES = [
-  { key: "ai-models", label: "模型", section: "模型发布/更新", guide: "新模型、模型版本、权重开放、模型能力与价格变化的发布与评测结果" },
-  { key: "ai-products", label: "产品", section: "产品发布/更新", guide: "AI 产品、功能、应用、工具、API 与平台的发布和更新" },
-  { key: "industry", label: "行业", section: "行业动态", guide: "公司经营、融资并购、人事、合作、诉讼、监管与政策、市场与基础设施" },
-  { key: "paper", label: "论文", section: "论文研究", guide: "研究论文、技术报告、基准与数据集" },
-  { key: "tip", label: "教程", section: "技巧与观点", guide: "教程、实践经验、使用技巧、提示词与工具用法、深度技术讲解" },
-  { key: "opinion", label: "观点", section: "技巧与观点", guide: "人物观点、评论、分析、访谈、现象与趋势讨论" },
+  { key: "policy", label: "政策变动", section: "政策变动", guide: "各入境计划的门槛、配额与规则调整，法例与指引修订，新政策公布与公众咨询" },
+  { key: "schemes", label: "计划动态", section: "计划动态", guide: "优才、高才通、专才、投资、进修、外劳等各入境计划的官方动态、申请要求与文件清单变化" },
+  { key: "practice", label: "审理实务", section: "审理实务", guide: "审批时间与补件要求变化、审理口径、执法行动、e-道与网上服务等办理安排调整" },
+  { key: "data", label: "数据与名单", section: "数据与名单", guide: "官方统计数据、获批与申请数字、配额使用、人才清单等各类名单的公布" },
+  { key: "residency", label: "续签与永居", section: "续签与永居", guide: "延长逗留期限、核实永久性居民资格、通常居住证明相关的规则与实务动态" },
+  { key: "industry", label: "行业", section: "行业与观点", guide: "移民服务行业经营与监管动态、机构与法院判例、市场变化、观点与解读" },
 ] as const;
 
 /**
  * 内容理解一步给每篇资料判的“内容类型”（写在 prompts/content-understanding.md 里，改了类型要同步改那份提示词）。
  * 评分提示词（prompts/selection-score.md）按类型给五个维度不同的权重。
  */
-export const ITEM_TYPES = ["model_release", "product_launch", "tool_or_prompt", "research_paper", "industry_event", "opinion_analysis", "tutorial_explainer"] as const;
+export const ITEM_TYPES = ["policy_change", "official_release", "data_release", "practice_update", "industry_event", "opinion_analysis", "explainer_guide"] as const;
 
 // ── 标签词表 ────────────────────────────────────────────────────────────────────────────
 
 /** 每篇资料的第一个标签必须是这些“分类标签”之一。 */
 export const CATEGORY_TAGS = [
-  "产品更新", "模型发布", "论文/研究", "开源/仓库", "教程/实践", "现象/趋势", "大佬观点", "评测/基准", "安全/对齐", "行业动态", "政策/监管",
-  "非AI/通用工具", "其他",
+  "政策变动", "计划动态", "审理实务", "数据/统计", "名单/配额", "续签/永居", "官方公告", "行业动态", "观点/分析", "解读/指南", "其他",
 ] as const;
 
 /** 可选的主题标签。 */
 export const TOPIC_TAGS = [
-  "Agent", "编码", "推理", "多模态", "语音", "视频", "图像生成", "RAG", "端侧", "数据/训练", "搜索", "部署/工程", "开源生态", "具身智能", "MCP/工具调用",
+  "优才计划", "高才通", "专才/输入内地人才", "投资移民", "进修移民", "外劳计划", "人才清单", "审批时间", "补件", "通常居住", "e-道/网上服务", "政策咨询", "签证/入境安排", "受养人/K12", "旅行证件",
 ] as const;
 
-/** 可选的实体标签（公司、机构、平台）。 */
-export const ENTITY_TAGS = ["OpenAI", "Anthropic", "DeepSeek", "DeepMind", "Google", "Meta", "Microsoft", "xAI", "Hugging Face", "GitHub", "arXiv"] as const;
+/** 可选的实体标签（机构、部门）。 */
+export const ENTITY_TAGS = ["入境事务处", "劳工处", "立法会", "政府统计处", "特区政府"] as const;
 
 /** 模型常写的近义词，统一成词表里的写法。 */
 export const TAG_SYNONYMS: Readonly<Record<string, string>> = {
-  "教程/玩法": "教程/实践", "技巧/最佳实践": "教程/实践", "合作/生态": "行业动态", "融资/收购": "行业动态", "公司动态": "行业动态",
-  合作: "行业动态", 生态: "行业动态", 融资: "行业动态", 收购: "行业动态", 投资: "行业动态", 并购: "行业动态",
-  政策: "政策/监管", 监管: "政策/监管", 法规: "政策/监管", 安全: "安全/对齐", 对齐: "安全/对齐",
-  论文: "论文/研究", 研究: "论文/研究", paper: "论文/研究", papers: "论文/研究",
-  "open-source": "开源/仓库", 开源: "开源/仓库", 仓库: "开源/仓库", repo: "开源/仓库",
-  教程: "教程/实践", 玩法: "教程/实践", 指南: "教程/实践", 技巧: "教程/实践", 最佳实践: "教程/实践", 实践: "教程/实践",
-  产品: "产品更新", 更新: "产品更新", 发布: "模型发布", 模型: "模型发布", 趋势: "现象/趋势", 现象: "现象/趋势", 观点: "大佬观点",
-  视频生成: "视频", 非ai: "非AI/通用工具", "non-ai": "非AI/通用工具", 通用工具: "非AI/通用工具", 工程工具: "非AI/通用工具",
-  安全扫描: "非AI/通用工具", devops: "非AI/通用工具", 行业: "行业动态", 动态: "行业动态",
+  优才: "优才计划", 优秀人才入境计划: "优才计划", qmas: "优才计划",
+  高才: "高才通", 高才通计划: "高才通", 高端人才通行证计划: "高才通", ttps: "高才通",
+  专才: "专才/输入内地人才", 输入内地人才计划: "专才/输入内地人才", 一般就业政策: "专才/输入内地人才", gep: "专才/输入内地人才",
+  投资入境: "投资移民", 新资本投资者入境计划: "投资移民", 资本投资者: "投资移民",
+  留学: "进修移民", 进修: "进修移民", 学生签证: "进修移民",
+  外劳: "外劳计划", 补充劳工: "外劳计划", 输入劳工: "外劳计划", 劳工输入计划: "外劳计划",
+  永居: "续签/永居", 永久居民: "续签/永居", 核实永久性居民: "续签/永居", 延长逗留: "续签/永居", 续签: "续签/永居",
+  政策: "政策变动", 法例: "政策变动", 修例: "政策变动", 咨询: "政策咨询", 公众咨询: "政策咨询",
+  统计: "数据/统计", 数据: "数据/统计", 数字: "数据/统计", 配额: "名单/配额", 名单: "名单/配额", 人才清单: "人才清单",
+  公告: "官方公告", 新闻公报: "官方公告", 新闻稿: "官方公告", 审批: "审批时间", 审理: "审理实务", 补件信: "补件",
+  评论: "观点/分析", 分析: "观点/分析", 观点: "观点/分析", 攻略: "解读/指南", 指南: "解读/指南", 解读: "解读/指南",
+  行业: "行业动态", 中介: "行业动态", 动态: "行业动态",
 };
 
 /** 模型漏了分类标签时，按内容类型补一个。 */
 export const CATEGORY_BY_ITEM_TYPE: Readonly<Record<string, string>> = {
-  model_release: "模型发布", product_launch: "产品更新", tool_or_prompt: "教程/实践", research_paper: "论文/研究",
-  industry_event: "行业动态", opinion_analysis: "大佬观点", tutorial_explainer: "教程/实践",
+  policy_change: "政策变动", official_release: "官方公告", data_release: "数据/统计", practice_update: "审理实务",
+  industry_event: "行业动态", opinion_analysis: "观点/分析", explainer_guide: "解读/指南",
 };
 
-// ── 公司与主体 ──────────────────────────────────────────────────────────────────────────
+// ── 机构与主体 ──────────────────────────────────────────────────────────────────────────
 
-/** 公司主题：id → 显示名、卡片上显示的标签（null 表示只用 entity:<id> 归类）、别名。 */
+/** 机构主题：id → 显示名、卡片上显示的标签（null 表示只用 entity:<id> 归类）、别名。 */
 export const ENTITIES: Record<string, { name: string; displayTag: string | null; aliases: string[] }> = {
-  openai: { name: "OpenAI", displayTag: "OpenAI", aliases: ["OpenAI", "ChatGPT", "Sora", "Codex", "GPT"] },
-  anthropic: { name: "Anthropic", displayTag: "Anthropic", aliases: ["Anthropic", "Claude"] },
-  google: { name: "Google", displayTag: "Google", aliases: ["Google", "DeepMind", "Gemini", "谷歌"] },
-  deepseek: { name: "DeepSeek", displayTag: "DeepSeek", aliases: ["DeepSeek", "深度求索"] },
-  qwen: { name: "千问 Qwen", displayTag: null, aliases: ["Qwen", "通义", "阿里"] },
-  kimi: { name: "Kimi / 月之暗面", displayTag: null, aliases: ["Kimi", "月之暗面", "Moonshot"] },
-  minimax: { name: "MiniMax", displayTag: null, aliases: ["MiniMax", "海螺"] },
-  zhipu: { name: "智谱 GLM", displayTag: null, aliases: ["智谱", "GLM", "Z.ai"] },
-  xai: { name: "xAI", displayTag: "xAI", aliases: ["xAI", "Grok"] },
-  meta: { name: "Meta", displayTag: "Meta", aliases: ["Meta", "Llama"] },
-  microsoft: { name: "Microsoft", displayTag: "Microsoft", aliases: ["Microsoft", "微软", "Copilot"] },
-  nvidia: { name: "NVIDIA", displayTag: null, aliases: ["NVIDIA", "英伟达"] },
-  "hugging-face": { name: "Hugging Face", displayTag: "Hugging Face", aliases: ["Hugging Face"] },
-  cursor: { name: "Cursor", displayTag: null, aliases: ["Cursor", "Anysphere"] },
-  openrouter: { name: "OpenRouter", displayTag: null, aliases: ["OpenRouter"] },
+  immd: { name: "入境事务处", displayTag: "入境事务处", aliases: ["入境处", "入境事务处", "Immigration Department", "IMMD"] },
+  labour: { name: "劳工处", displayTag: "劳工处", aliases: ["劳工处", "Labour Department"] },
+  legco: { name: "立法会", displayTag: "立法会", aliases: ["立法会", "LegCo", "立法会秘书处"] },
+  censtatd: { name: "政府统计处", displayTag: "政府统计处", aliases: ["统计处", "政府统计处", "Census and Statistics Department"] },
+  hksarg: { name: "香港特区政府", displayTag: "特区政府", aliases: ["特区政府", "香港特别行政区政府", "保安局", "政务司", "行政长官"] },
 };
 
 /**
- * 身份词典：摘要和标题里出现的公司，必须在原文里也出现过，否则退回原标题、丢掉摘要（防止模型张冠李戴）。
+ * 身份词典：摘要和标题里出现的机构，必须在原文里也出现过，否则退回原标题、丢掉摘要（防止模型张冠李戴）。
  * 行业没有这个问题时可以留空数组。
  */
 export const IDENTITY_LEXICON: ReadonlyArray<{ id: string; name: string; patterns: RegExp[] }> = [
-  { id: "openai", name: "OpenAI", patterns: [/openai|chatgpt|\bgpt-?[o\d]|\bsora\b|\bcodex\b/i] },
-  { id: "anthropic", name: "Anthropic", patterns: [/anthropic|\bclaude\b/i, /\b(?:opus|sonnet|haiku)\s*\d+(?:[.\-]\d+)*\b/i, /\bfable\s*\d+(?:[.\-]\d+)*\b|\bmythos\b/i] },
-  { id: "google", name: "Google / Gemini", patterns: [/google|deepmind|\bgemini\b|notebooklm|\bveo\s?\d|\bAlphaFold\b|\bAMIE\b/i] },
-  { id: "deepseek", name: "DeepSeek", patterns: [/deepseek|深度求索/i] },
-  { id: "xai", name: "xAI / Grok", patterns: [/\bxai\b|\bgrok\b/i] },
-  { id: "meta", name: "Meta / Llama", patterns: [/\bMeta\b/, /\bmeta\s?ai\b|\bllama\b/i] },
-  { id: "microsoft", name: "Microsoft / Copilot", patterns: [/microsoft|copilot|微软/i] },
-  { id: "nvidia", name: "NVIDIA", patterns: [/nvidia|英伟达|\bnemotron\b|\bnemo\b|\bblackwell\b|\brubin(?:\s+ultra)?\b|\bcuda\b/i] },
-  { id: "qwen", name: "千问 Qwen", patterns: [/\bqwen|通义|千问/i] },
-  { id: "hugging-face", name: "Hugging Face", patterns: [/hugging\s?face/i] },
-  { id: "cursor", name: "Cursor", patterns: [/\bCursor\b/] },
-  { id: "kimi", name: "Kimi / 月之暗面", patterns: [/\bkimi\b|月之暗面|\bmoonshot\s?ai\b/i] },
-  { id: "openrouter", name: "OpenRouter", patterns: [/openrouter/i] },
-  { id: "minimax", name: "MiniMax", patterns: [/minimax/i] },
-  { id: "zhipu", name: "智谱 GLM", patterns: [/智谱|\bglm-?[4-9]/i] },
-  { id: "hunyuan", name: "腾讯混元", patterns: [/混元|hunyuan/i] },
-  { id: "doubao", name: "字节豆包", patterns: [/豆包|doubao|字节跳动|bytedance/i] },
-  { id: "mistral", name: "Mistral", patterns: [/mistral/i] },
-  { id: "perplexity", name: "Perplexity", patterns: [/\bPerplexity\b/] },
-  { id: "runway", name: "Runway", patterns: [/\brunway\b/i] },
-  { id: "suno", name: "Suno", patterns: [/\bsuno\b/i] },
-  { id: "midjourney", name: "Midjourney", patterns: [/midjourney/i] },
-  { id: "stability-ai", name: "Stability AI", patterns: [/stability\s?ai/i] },
-  { id: "elevenlabs", name: "ElevenLabs", patterns: [/eleven\s?labs/i] },
-  { id: "vllm", name: "vLLM", patterns: [/\bvllm\b/i] },
-  { id: "ollama", name: "Ollama", patterns: [/\bollama\b/i] },
-  { id: "windsurf", name: "Windsurf", patterns: [/windsurf/i] },
-  { id: "devin", name: "Devin", patterns: [/\bdevin\b/i] },
-  { id: "manus", name: "Manus", patterns: [/\bmanus\b/i] },
-  { id: "apple", name: "Apple AI", patterns: [/\bapple\s?(intelligence|silicon|ai)\b|苹果(智能|\s?AI)/i] },
-  { id: "amazon", name: "Amazon / AWS", patterns: [/amazon|\baws\b|亚马逊/i] },
-  { id: "baidu", name: "百度文心", patterns: [/百度|baidu|文心|\bernie\s?bot\b/i] },
+  { id: "immd", name: "入境事务处", patterns: [/入境處|入境处|入境事務處|入境事务处|immigration\s*department|\bimmd\b/i] },
+  { id: "labour", name: "劳工处", patterns: [/勞工處|劳工处|labour\s*department/i] },
+  { id: "legco", name: "立法会", patterns: [/立法會|立法会|legislative\s*council|\blegco\b/i] },
+  { id: "censtatd", name: "政府统计处", patterns: [/統計處|统计处|census\s*(?:and|&)\s*statistics/i] },
+  { id: "hksarg", name: "特区政府", patterns: [/特區政府|特区政府|香港特別行政區政府|香港特别行政区政府|保安局|政務司司长|政务司司长|行政長官|行政长官/i] },
 ];
 
-/** 这些域名上的文章，发布方就是对应的公司（托管平台如 GitHub、arXiv 不算）。 */
+/** 这些域名上的文章，发布方就是对应的机构（新闻聚合页如 info.gov.hk、news.gov.hk 归特区政府）。 */
 export const PUBLISHER_DOMAINS: ReadonlyArray<{ entityId: string; domains: readonly string[] }> = [
-  { entityId: "openai", domains: ["openai.com"] },
-  { entityId: "anthropic", domains: ["anthropic.com", "claude.com"] },
-  { entityId: "google", domains: ["deepmind.google", "ai.google", "blog.google"] },
-  { entityId: "deepseek", domains: ["deepseek.com"] },
-  { entityId: "xai", domains: ["x.ai"] },
-  { entityId: "meta", domains: ["ai.meta.com"] },
-  { entityId: "microsoft", domains: ["microsoft.com"] },
-  { entityId: "nvidia", domains: ["nvidia.com"] },
-  { entityId: "qwen", domains: ["qwen.ai"] },
-  { entityId: "cursor", domains: ["cursor.com"] },
-  { entityId: "openrouter", domains: ["openrouter.ai"] },
+  { entityId: "immd", domains: ["immd.gov.hk"] },
+  { entityId: "labour", domains: ["labour.gov.hk"] },
+  { entityId: "legco", domains: ["legco.gov.hk"] },
+  { entityId: "censtatd", domains: ["censtatd.gov.hk"] },
+  { entityId: "hksarg", domains: ["gov.hk", "news.gov.hk", "info.gov.hk"] },
 ];
 
-/** 原文里的这些写法也算提到了对应公司。 */
+/** 原文里的这些写法也算提到了对应机构。 */
 export const IDENTITY_CONTEXT_ALIASES: ReadonlyArray<{ entityId: string; pattern: RegExp }> = [
-  { entityId: "meta", pattern: /@AIatMeta\b/i },
-  { entityId: "zhipu", pattern: /\bZhipu(?:\s+AI\b|['’]s\b)/i },
+  { entityId: "immd", pattern: /\bImmd\b/ },
 ];
